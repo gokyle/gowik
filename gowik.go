@@ -7,6 +7,7 @@ import (
 	"github.com/russross/blackfriday"
 	"html/template"
 	"io/ioutil"
+        "log"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -18,6 +19,8 @@ var (
 	wiki_ext = "md"
 )
 
+var wikiTpl =webshell.MustCompileTemplate("templates/index.html")
+
 type WikiPage struct {
 	FileName string
 	RPath    string
@@ -27,11 +30,13 @@ type WikiPage struct {
 }
 
 func init() {
-	webshell.SERVER_ADDR = ""
-	webshell.SERVER_PORT = "8080"
+}
+
+func main() {
+        var host, port string
 	conf, err := config.ParseFile("wiki.conf")
 	if err != nil {
-		fmt.Println("[!] config: ", err.Error())
+		panic(`config: ` + err.Error())
 	} else if _, ok := conf["source"]; ok {
 		if item := conf["source"]["pages"]; item != "" {
 			wiki_dir = item
@@ -40,16 +45,27 @@ func init() {
 			wiki_ext = item
 		}
 	}
-}
 
-func main() {
-	webshell.AddRoute("/", wiki)
-	webshell.Serve(false, nil)
+        fmt.Printf("%+v\n", conf["server"])
+
+        if _, ok := conf["server"]; ok {
+                host = conf["server"]["host"]
+                if port = conf["server"]["port"]; port == "" {
+                        port = "8080"
+                }
+        } else {
+                fmt.Println("[+] loading defaults")
+                port = "8080"
+        }
+
+        fmt.Printf("[+] listening on %s:%s\n", host, port)
+        app := webshell.NewApp("gowiki", host, port)
+	app.AddRoute("/", wiki)
+	log.Fatal(app.Serve())
 }
 
 func wiki(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	fmt.Println("teh path: ", path)
 	if path == "/" {
 		path = "/index"
 	}
@@ -67,7 +83,7 @@ func wiki(w http.ResponseWriter, r *http.Request) {
 			showWikiPage(wp, w, r)
 			return
 		} else if r.URL.RawQuery == "edit" {
-			out, err = webshell.ServeTemplate("templates/edit.html", wp)
+			out, err = webshell.ServeTemplateFile("templates/edit.html", wp)
 		}
 	} else {
 		fmt.Println("[-] updaterfy")
@@ -84,7 +100,7 @@ func wiki(w http.ResponseWriter, r *http.Request) {
 }
 
 func showWikiPage(wp *WikiPage, w http.ResponseWriter, r *http.Request) {
-	out, err := webshell.ServeTemplate("templates/index.html", wp)
+	out, err := webshell.ServeTemplateFile("templates/index.html", wp)
 	if err != nil {
 		webshell.Error500(err.Error(), "text/plain", w, r)
 	} else {
