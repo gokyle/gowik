@@ -1,19 +1,16 @@
 package main
 
 // The default header to use if one is not available
-defaultHead := `<!doctype html>
+var defaultHead = `<!doctype html>
 <html>
 <head>
     <title>gowik</title>
     <meta charset="UTF-8" />
     <meta name="author" content="Kyle Isom" />
-    <link href="/assets/css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="%s" rel="stylesheet" type="text/css" />
     <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
     <style type="text/css">
-
-
-
-    html,
+   html,
     body {
         height: 100%;
         padding-top: 60px;
@@ -61,7 +58,7 @@ defaultHead := `<!doctype html>
 <body>
 `
 
-defaultNavBar := `
+var defaultNavBar = `
  <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
@@ -71,16 +68,23 @@ defaultNavBar := `
         <span class="icon-bar"></span>
     </a>
     <a class="brand" href="/">GoWik</a>
-    <div class="nav-collapse collapse">
-        <ul class="nav">
-      </ul>
-  </div><!--/.nav-collapse -->
+{{if .Authenticated}}
+   <form class="navbar-form pull-right" action="/logout">
+   <button type="submit" class="btn">Logout</button>
+   </form>
+{{else}}
+    <form class="navbar-form pull-right" action="/login">
+      <input class="span2" type="text" placeholder="Email" name="user">
+      <input class="span2" type="password" placeholder="Password" name="pass">
+    <button type="submit" class="btn">Log in</button>
+    </form>
+{{end}}
 </div>
 </div>
 </div>
 `
 
-defaultDisplayBody := `
+var defaultDisplayBody = `
 <div class="container">
     <div class="row">
         <div class="span2"></div>
@@ -92,14 +96,14 @@ defaultDisplayBody := `
 </div>
 `
 
-defaultFooter := `
+var defaultFooter = `
 <div class="footer">
+    <!-- the default version of this stylesheet uses the
+            Bootstrap stylesheet (http://twitter.github.com/bootstrap/)
+            which is licensed under the Apache License v2.0
+            (http://www.apache.org/licenses/LICENSE-2.0). -->
     <div class="container">
-        <p class="muted credit" style="text-align:center">This page uses the
-            <a href="http://twitter.github.com/bootstrap/">bootstrap</a> stylesheet,
-            which is licensed under the
-            <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License
-                v2.0</a>.<br>
+        <p class="muted credit" style="text-align:center"><br>
                 Built by <a href="http://gokyle.github.com/">Kyle Isom</a> circa 2012.<br>
             Powered by <a href="http://www.golang.org">Go</a>.</p>
             </div>

@@ -89,8 +89,10 @@ func authenticate(user interface{}) (salt, hash []byte) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		// show login form
+	if r.Method != "POST" {
+		r.URL.Path = "/"
+		ServeWikiPage(w, r)
+		return
 	}
 	r.ParseForm()
 	user := r.FormValue("user")
@@ -104,6 +106,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+}
+
+func Logout(r *http.Request) {
+	Security.SessionStore.DestroySession(r)
 }
 
 func LoginFailed(w http.ResponseWriter, r *http.Request) {

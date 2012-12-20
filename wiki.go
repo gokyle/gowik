@@ -1,22 +1,23 @@
 package main
 
 import (
-        "fmt"
-        "github.com/gokyle/webshell"
+	"fmt"
+	"github.com/gokyle/webshell"
 	"github.com/russross/blackfriday"
-        "io/ioutil"
-        "net/http"
+	"html/template"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
-        "html/template"
 )
 
 var titleRegex *regexp.Regexp
 
 var Wiki struct {
-	PageDir   string
-	Extension string
+	PageDir    string
+	Extension  string
+	Stylesheet string
 }
 
 func initWiki(wikiCfg map[string]string) {
@@ -26,6 +27,8 @@ func initWiki(wikiCfg map[string]string) {
 	}
 	Wiki.PageDir = filepath.Join(cwd, "pages")
 	Wiki.Extension = ".md"
+	Wiki.Stylesheet = "http://twitter.github.com/bootstrap/assets/css/bootstrap.css"
+
 	for key, val := range wikiCfg {
 		switch key {
 		case "pages":
@@ -37,12 +40,15 @@ func initWiki(wikiCfg map[string]string) {
 			Wiki.PageDir = pageDir
 		case "extension":
 			Wiki.Extension = val
+		case "stylesheet":
+			Wiki.Stylesheet = val
 		}
 	}
+	defaultHead = fmt.Sprintf(defaultHead, Wiki.Stylesheet)
 
 	var extRegex string
 	for i := 0; i < len(Wiki.Extension); i++ {
-                char := string(Wiki.Extension[i])
+		char := string(Wiki.Extension[i])
 		if char == "." {
 			extRegex += "\\."
 		} else {
@@ -64,17 +70,26 @@ type Page struct {
 }
 
 func ServeWikiPage(w http.ResponseWriter, r *http.Request) {
-        page := new(Page)
-        page.RequestToFile(r.URL.Path)
-        page.RenderMarkdown()
-        fmt.Printf("[-] wiki -> %+v\n", Wiki)
-        fmt.Printf("[-] page -> %+v\n", page)
-        body, err := webshell.BuildTemplateFile("templates/index.html", page)
-        if err != nil {
-                webshell.Error500(err.Error(), "text/plain", w, r)
-        } else {
-                w.Write(body)
-        }
+	update := false
+	if r.Method != "GET" && r.Method != "HEAD" {
+		update = true
+	}
+	if r.URL.Path == "/logout" {
+		Logout(r)
+	}
+	page := new(Page)
+	page.Authenticated = authorised(update, r)
+	page.RequestToFile(r.URL.Path)
+	page.RenderMarkdown()
+	fmt.Printf("[-] wiki -> %+v\n", Wiki)
+	fmt.Printf("[-] page -> %+v\n", page)
+	ShowPage(page, w, r)
+	//body, err := webshell.BuildTemplateFile("templates/index.html", page)
+	// if err != nil {
+	//         webshell.Error500(err.Error(), "text/plain", w, r)
+	// } else {
+	//         ShowPage(page, w, r)
+	// }
 }
 
 // RequestToFile translates an incoming request to a markdown filename.
@@ -95,4 +110,19 @@ func (page *Page) RenderMarkdown() {
 	page.Body = template.HTML(string(blackfriday.MarkdownCommon(mdContent)))
 	page.Title = titleRegex.ReplaceAllString(filepath.Base(page.Filename),
 		"$1")
+}
+
+func ShowPage(page *Page, w http.ResponseWriter, r *http.Request) {
+	tplSrc := defaultHead + defaultNavBar + defaultDisplayBody + defaultFooter
+	t := template.New("page")
+	t, err := t.Parse(tplSrc)
+	if err != nil {
+		fmt.Printf("[!] template error: %s\n", err.Error())
+		return
+	}
+	out, err := webshell.BuildTemplate(t, page)
+	if err != nil {
+		panic("template error: " + err.Error())
+	}
+	w.Write(out)
 }
