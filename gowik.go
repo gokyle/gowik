@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+        "fmt"
 	config "github.com/gokyle/goconfig"
 	"github.com/gokyle/webshell"
 	"log"
@@ -17,8 +18,9 @@ func init() {
 	var err error
 	cfg, err = config.ParseFile(*confFile)
 	if err != nil {
-		panic("could not open config file")
-		// defaultConfig()
+                fmt.Println("[!] could not load %s: %s\n",
+                        *confFile, err.Error())
+                fmt.Println("[+] using defaults")
 	}
 	initSecurity(cfg["security"])
         initWiki(cfg["wiki"])
@@ -49,5 +51,6 @@ func initServer(serverCfg map[string]string) {
 
 func main() {
         app.AddRoute("/", ServeWikiPage)
+        fmt.Println("[+] wiki serving on ", app.Address())
 	log.Fatal(app.Serve())
 }
