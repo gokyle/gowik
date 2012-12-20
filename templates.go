@@ -80,7 +80,7 @@ defaultNavBar := `
 </div>
 `
 
-defaultBody :=`
+defaultDisplayBody := `
 <div class="container">
     <div class="row">
         <div class="span2"></div>
@@ -92,3 +92,18 @@ defaultBody :=`
 </div>
 `
 
+defaultFooter := `
+<div class="footer">
+    <div class="container">
+        <p class="muted credit" style="text-align:center">This page uses the
+            <a href="http://twitter.github.com/bootstrap/">bootstrap</a> stylesheet,
+            which is licensed under the
+            <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License
+                v2.0</a>.<br>
+                Built by <a href="http://gokyle.github.com/">Kyle Isom</a> circa 2012.<br>
+            Powered by <a href="http://www.golang.org">Go</a>.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+`
