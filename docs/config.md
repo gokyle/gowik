@@ -15,3 +15,9 @@ used.
 * If 'LockView' is "true", then the user must be authenticated to view the
 wiki.
 * `keyfile` and `certfile`, if set, will cause the wiki to serve over SSL (TLS).
+
+### server
+
+* `address` specifies an address other than 127.0.0.1 to listen on
+* `port` specifies a port to listen on
+
