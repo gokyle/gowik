@@ -1,7 +1,7 @@
 package main
 
 import (
-        "fmt"
+	"fmt"
 	"github.com/gokyle/webshell/auth"
 	"net/http"
 	"strings"
@@ -80,10 +80,10 @@ func authorised(update bool, r *http.Request) bool {
 }
 
 func authenticated(r *http.Request) bool {
-        if Security.SessionStore == nil {
-                return false
-        }
-        return Security.SessionStore.CheckSession(r)
+	if Security.SessionStore == nil {
+		return false
+	}
+	return Security.SessionStore.CheckSession(r)
 }
 
 func authenticate(user interface{}) (salt, hash []byte) {
@@ -97,9 +97,9 @@ func authenticate(user interface{}) (salt, hash []byte) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-        fmt.Println("[-] logging in")
+	fmt.Println("[-] logging in")
 	if r.Method != "POST" {
-                fmt.Println("[-] not a valid submission")
+		fmt.Println("[-] not a valid submission")
 		r.URL.Path = "/"
 		ServeWikiPage(w, r)
 		return
@@ -107,7 +107,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	user := r.FormValue("user")
 	pass := r.FormValue("pass")
-        fmt.Printf("[-] user<- %s, pass<- %s\n", user, pass)
+	fmt.Printf("[-] user<- %s, pass<- %s\n", user, pass)
 
 	if !authenticated(r) {
 		cookie, err := Security.SessionStore.AuthSession(user, pass, false, "")
@@ -115,8 +115,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			LoginFailed(w, r)
 			return
 		}
-                fmt.Println("Login success...")
-                http.Redirect(w, r, "/", 301)
+		fmt.Println("Login success...")
+		http.Redirect(w, r, "/", 301)
 	}
 }
 
@@ -125,5 +125,5 @@ func Logout(r *http.Request) {
 }
 
 func LoginFailed(w http.ResponseWriter, r *http.Request) {
-        fmt.Println("[!] login failed")
+	fmt.Println("[!] login failed")
 }

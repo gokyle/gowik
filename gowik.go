@@ -5,8 +5,8 @@ import (
 	"fmt"
 	config "github.com/gokyle/goconfig"
 	"github.com/gokyle/webshell"
-        "path/filepath"
 	"log"
+	"path/filepath"
 )
 
 var cfg config.ConfigMap
@@ -51,9 +51,9 @@ func initServer(serverCfg map[string]string) {
 }
 
 func main() {
-        assetsDir := filepath.Join(Wiki.WikiDir, "assets")
+	assetsDir := filepath.Join(Wiki.WikiDir, "assets")
 	app.AddRoute("/", ServeWikiPage)
-        app.StaticRoute("/assets/", assetsDir)
+	app.StaticRoute("/assets/", assetsDir)
 	fmt.Println("[+] wiki serving on ", app.Address())
 	log.Fatal(app.Serve())
 }
