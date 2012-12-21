@@ -15,36 +15,49 @@ import (
 var titleRegex *regexp.Regexp
 
 var Wiki struct {
-	PageDir    string
+	WikiDir    string
 	Extension  string
 	Stylesheet string
+        PageTemplate string
 }
+
+var pageTemplates = []string{"head.html", "navbar.html", "body.html", "footer.html"}
 
 func initWiki(wikiCfg map[string]string) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic("could not get working directory: " + err.Error())
 	}
-	Wiki.PageDir = filepath.Join(cwd, "pages")
+	Wiki.WikiDir = cwd
 	Wiki.Extension = ".md"
 	Wiki.Stylesheet = "http://twitter.github.com/bootstrap/assets/css/bootstrap.css"
 
 	for key, val := range wikiCfg {
 		switch key {
-		case "pages":
+		case "wikipath":
 			pageDir, err := filepath.Abs(val)
 			if err != nil {
 				fmt.Println("[!] could not find ", val)
 				os.Exit(1)
 			}
-			Wiki.PageDir = pageDir
+			Wiki.WikiDir = pageDir
 		case "extension":
 			Wiki.Extension = val
 		case "stylesheet":
 			Wiki.Stylesheet = val
 		}
 	}
-	defaultHead = fmt.Sprintf(defaultHead, Wiki.Stylesheet)
+
+        for _, tFile := range pageTemplates {
+                pageFile := filepath.Join(Wiki.WikiDir, "templates", tFile)
+                page, err := ioutil.ReadFile(pageFile)
+                if err != nil {
+                        fmt.Println("[!] couldn't read ", pageFile)
+                        os.Exit(1)
+                }
+                Wiki.PageTemplate += string(page)
+        }
+
 
 	var extRegex string
 	for i := 0; i < len(Wiki.Extension); i++ {
@@ -59,6 +72,7 @@ func initWiki(wikiCfg map[string]string) {
 }
 
 type Page struct {
+        AuthRequired bool
 	Authenticated bool
 	Title         string
 	Filename      string
@@ -70,26 +84,22 @@ type Page struct {
 }
 
 func ServeWikiPage(w http.ResponseWriter, r *http.Request) {
-	update := false
-	if r.Method != "GET" && r.Method != "HEAD" {
-		update = true
-	}
+        // ** will need later
+	// update := false
+	// if r.Method != "GET" && r.Method != "HEAD" {
+	// 	update = true
+	// }
 	if r.URL.Path == "/logout" {
 		Logout(r)
-	}
+	} else if r.URL.Path == "/login" {
+                Login(w, r)
+        }
 	page := new(Page)
-	page.Authenticated = authorised(update, r)
+        page.AuthRequired = Security.Enabled
+	page.Authenticated = authenticated(r)
 	page.RequestToFile(r.URL.Path)
 	page.RenderMarkdown()
-	fmt.Printf("[-] wiki -> %+v\n", Wiki)
-	fmt.Printf("[-] page -> %+v\n", page)
 	ShowPage(page, w, r)
-	//body, err := webshell.BuildTemplateFile("templates/index.html", page)
-	// if err != nil {
-	//         webshell.Error500(err.Error(), "text/plain", w, r)
-	// } else {
-	//         ShowPage(page, w, r)
-	// }
 }
 
 // RequestToFile translates an incoming request to a markdown filename.
@@ -97,7 +107,7 @@ func (page *Page) RequestToFile(requestPath string) {
 	if requestPath == "/" {
 		requestPath = "/index" + Wiki.Extension
 	}
-	page.Filename = filepath.Join(Wiki.PageDir, requestPath)
+	page.Filename = filepath.Join(Wiki.WikiDir, "pages", requestPath)
 }
 
 func (page *Page) RenderMarkdown() {
@@ -113,9 +123,8 @@ func (page *Page) RenderMarkdown() {
 }
 
 func ShowPage(page *Page, w http.ResponseWriter, r *http.Request) {
-	tplSrc := defaultHead + defaultNavBar + defaultDisplayBody + defaultFooter
 	t := template.New("page")
-	t, err := t.Parse(tplSrc)
+	t, err := t.Parse(Wiki.PageTemplate)
 	if err != nil {
 		fmt.Printf("[!] template error: %s\n", err.Error())
 		return
