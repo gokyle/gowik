@@ -19,7 +19,7 @@ func init() {
 	var err error
 	cfg, err = config.ParseFile(*confFile)
 	if err != nil {
-		fmt.Println("[!] could not load %s: %s\n",
+		fmt.Printf("[!] could not load %s: %s\n",
 			*confFile, err.Error())
 		fmt.Println("[+] using defaults")
 	}
