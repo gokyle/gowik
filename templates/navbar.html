@@ -1,0 +1,26 @@
+ <div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </a>
+    <a class="brand" href="/">GoWik</a>
+{{if .AuthRequired}}
+{{if .Authenticated}}
+   <form class="navbar-form pull-right" action="/logout">
+   <button type="submit" class="btn">Logout</button>
+   </form>
+{{else}}
+    <form class="navbar-form pull-right" method="POST" action="/login">
+      <input class="span2" type="text" placeholder="Username" name="user">
+      <input class="span2" type="password" placeholder="Password" name="pass">
+    <button type="submit" class="btn">Log in</button>
+    </form>
+{{end}}
+{{end}}
+</div>
+</div>
+</div>
+
