@@ -1,16 +1,15 @@
-<!doctype html>
-<html>
-  <head>
-    <title>{{.Title}}</title>
-  </head>
-  <body>
-    <h1>{{.Title}}</title>
-        <form action="{{.RPath}}" method="POST">
-        <textarea name="new_body" cols="80" rows="25">
-{{.Raw}}
-        </textarea>
-        <input type="submit">
-        </form>
-  </body>
-</html>
+<div class="container">
+    <div class="row">
+        <div class="span2"></div>
+        <div class="span8">
+          <form action="/{{.Title}}" method="POST">
+          <textarea cols="256" rows="25" name="new_body">
+{{.Content}}
+          </textarea><br>
+          <input type="submit">
+          </form>
+        </div>
+        <div class="span2"></div>
+    </div>
+</div>
 

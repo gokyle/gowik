@@ -7,9 +7,13 @@
         <span class="icon-bar"></span>
     </a>
     <a class="brand" href="/">GoWik</a>
+    <form method="GET">
+    <input type="hidden" name="mode" value="edit">
+    <button type="submit" class="btn">Edit</button>
+    </form>
 {{if .AuthRequired}}
 {{if .Authenticated}}
-   <form class="navbar-form pull-right" action="/logout">
+   <form class="navbar-form pull-right">
    <button type="submit" class="btn">Logout</button>
    </form>
 {{else}}
