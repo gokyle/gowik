@@ -117,9 +117,14 @@ func LoadPage(r *http.Request) (page *Page) {
 }
 
 func LoadPageFile(path string, r *http.Request) (page *Page) {
+        if r == nil && Security.AuthView {
+                return
+        }
 	page = new(Page)
-	page.AuthRequired = Security.Enabled
-	page.Authenticated = authenticated(r)
+        if r != nil {
+	        page.AuthRequired = Security.Enabled
+	        page.Authenticated = authenticated(r)
+        }
 	page.RequestToFile(path)
 	page.RenderMarkdown()
 	if page.Error != nil && os.IsNotExist(page.Error) {
@@ -141,6 +146,9 @@ func WikiServe(w http.ResponseWriter, r *http.Request) {
 			WikiDelete(w, r)
 		case "list":
 			WikiList(w, r)
+                case "search":
+                        WikiSearch(w, r)
+                        //RedirectToIndex(w, r)
 		}
 	} else {
 		WikiView(w, r)
@@ -300,6 +308,25 @@ func WikiNotAuthorised(page *Page, w http.ResponseWriter, r *http.Request) *temp
 }
 
 func WikiList(w http.ResponseWriter, r *http.Request) {
+        pages := PageList()
+	var body string
+	for _, pageString := range pages {
+		body += "    <li><a href=\"" + pageString + "\">" + pageString[1:] + "</a></li>\n"
+	}
+	body = fmt.Sprintf(`<h1>Page Listing</h1>
+  <ul>
+%s
+</ul>`, body)
+	page := LoadPageFile("/", r)
+	page.Body = template.HTML(body)
+	t := Template(Wiki.PageTemplate, w, r)
+	if t == nil {
+		return
+	}
+	ServePage(t, page, w)
+}
+
+func PageList() []string {
 	pageDir := filepath.Join(Wiki.WikiDir, "pages")
 	pages := make([]string, 0)
 	filepath.Walk(pageDir, func(path string, info os.FileInfo, err error) error {
@@ -310,15 +337,21 @@ func WikiList(w http.ResponseWriter, r *http.Request) {
 		return err
 	})
 	sort.Strings(pages)
+        return pages
+}
 
-	var body string
-	for _, pageString := range pages {
-		body += "    <li><a href=\"" + pageString + "\">" + pageString[1:] + "</a></li>\n"
-	}
-	body = fmt.Sprintf(`<h1>Page Listing</h1>
+func WikiSearch(w http.ResponseWriter, r *http.Request) {
+        results := SearchPages(r.FormValue("terms"))
+        var body string
+        for _, res := range results {
+		body += "    <li><a href=\"/%s\">%s</a> (%d matches)</li>"
+                body = fmt.Sprintf(body, res.Page, res.Page, res.Hits)
+        }
+	body = fmt.Sprintf(`<h1>Search Results</h1>
+  <p>There were <strong>%d</strong> matches:</p>
   <ul>
 %s
-</ul>`, body)
+</ul>`, len(results), body)
 	page := LoadPageFile("/", r)
 	page.Body = template.HTML(body)
 	t := Template(Wiki.PageTemplate, w, r)

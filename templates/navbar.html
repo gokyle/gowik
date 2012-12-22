@@ -19,6 +19,11 @@
     <input type="hidden" name="mode" value="delete">
     <button type="submit" class="btn">Delete</button>
     </form>
+    <form class="navbar-form pull-right" method="GET" action="/">
+    <input type="hidden" name="mode" value="search">
+    <input class="span2" type="text" placeholder="terms" name="terms">
+    <button type="submit" class="btn">Search</button>
+    </form>
 {{if .AuthRequired}}
 {{if .Authenticated}}
    <form class="navbar-form pull-right" action="/" method="POST">
