@@ -7,9 +7,17 @@
         <span class="icon-bar"></span>
     </a>
     <a class="brand" href="/">GoWik</a>
-    <form method="GET">
+    <form method="GET" class="navbar-form pull-left" style="margin:0 10px 0 0">
+    <input type="hidden" name="mode" value="list">
+    <button type="submit" class="btn">List</button>
+    </form>
+    <form method="GET" class="navbar-form pull-left" style="margin:0 10px 0 0">
     <input type="hidden" name="mode" value="edit">
     <button type="submit" class="btn">Edit</button>
+    </form>
+    <form method="GET" class="navbar-form pull-left" style="margin:0 10px 0 0">
+    <input type="hidden" name="mode" value="delete">
+    <button type="submit" class="btn">Delete</button>
     </form>
 {{if .AuthRequired}}
 {{if .Authenticated}}
