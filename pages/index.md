@@ -19,8 +19,3 @@ Some stuff *should* happen, but **probably** not here.
 
 ## how do i edit pages?
 &lt;url&gt;?edit
-
-no auth yet, i'm working on it
-
-
-        
