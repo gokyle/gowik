@@ -11,6 +11,8 @@
     <input type="hidden" name="mode" value="list">
     <button type="submit" class="btn">Pages</button>
     </form>
+{{if .Special}}
+{{else}}
     <form method="GET" class="navbar-form pull-left" style="margin:0 10px 0 0">
     <input type="hidden" name="mode" value="edit">
     <button type="submit" class="btn">Edit</button>
@@ -19,6 +21,7 @@
     <input type="hidden" name="mode" value="delete">
     <button type="submit" class="btn">Delete</button>
     </form>
+{{end}}
     <form class="navbar-form pull-left" method="GET" action="/" style="margin:0 10px 0 0">
     <input type="hidden" name="mode" value="search">
     <input class="span2" type="text" placeholder="terms" name="terms">

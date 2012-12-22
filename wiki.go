@@ -98,6 +98,7 @@ type Page struct {
 	Filename      string
 	Body          template.HTML
 	Content       string
+        Special       bool
 	Error         error
 	ShowError     bool
 	Message       string
@@ -321,6 +322,7 @@ func WikiList(w http.ResponseWriter, r *http.Request) {
 </ul>`, body)
 	page := LoadPageFile("/", r)
 	page.Body = template.HTML(body)
+        page.Special = true
 	t := Template(Wiki.PageTemplate, w, r)
 	if t == nil {
 		return
@@ -356,6 +358,7 @@ func WikiSearch(w http.ResponseWriter, r *http.Request) {
 </ul>`, len(results), body)
 	page := LoadPageFile("/", r)
 	page.Body = template.HTML(body)
+        page.Special = true
 	t := Template(Wiki.PageTemplate, w, r)
 	if t == nil {
 		return
