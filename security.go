@@ -102,24 +102,24 @@ func authenticate(user interface{}) (salt, hash []byte) {
 
 func Login(w http.ResponseWriter, r *http.Request) (cookie *http.Cookie) {
 	if r.Method != "POST" {
-                http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-                return nil
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return nil
 	}
 	r.ParseForm()
 	user := r.FormValue("user")
 	pass := r.FormValue("pass")
 
 	if !authenticated(r) {
-                var err error
+		var err error
 		cookie, err = Security.SessionStore.AuthSession(user, pass, Security.TLS.Enabled, "")
 		if err != nil || cookie == nil {
 			LoginFailed(w, r)
 			return
 		}
-                http.SetCookie(w, cookie)
-                return cookie
+		http.SetCookie(w, cookie)
+		return cookie
 	}
-        return nil
+	return nil
 }
 
 func Logout(r *http.Request) {
