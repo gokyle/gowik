@@ -16,6 +16,3 @@ Some stuff *should* happen, but **probably** not here.
 * why not?
 * couldn't sleep
 * are you not making a wiki?
-
-## how do i edit pages?
-&lt;url&gt;?edit
