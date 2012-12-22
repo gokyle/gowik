@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gokyle/webshell/auth"
 	"net/http"
 	"strings"
@@ -22,6 +21,11 @@ var Security struct {
 	}
 	SessionStore *auth.SessionStore
 }
+
+var NotAuthorised = `
+<h1>Permission Denied</h1>
+<p>You are not authorised to do this. Maybe try logging in?</p>
+`
 
 // Initialise security options
 func initSecurity(cfgSec map[string]string) {
@@ -96,28 +100,26 @@ func authenticate(user interface{}) (salt, hash []byte) {
 	return
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("[-] logging in")
+func Login(w http.ResponseWriter, r *http.Request) (cookie *http.Cookie) {
 	if r.Method != "POST" {
-		fmt.Println("[-] not a valid submission")
-		r.URL.Path = "/"
-		ServeWikiPage(w, r)
-		return
+                http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+                return nil
 	}
 	r.ParseForm()
 	user := r.FormValue("user")
 	pass := r.FormValue("pass")
-	fmt.Printf("[-] user<- %s, pass<- %s\n", user, pass)
 
 	if !authenticated(r) {
-		cookie, err := Security.SessionStore.AuthSession(user, pass, false, "")
+                var err error
+		cookie, err = Security.SessionStore.AuthSession(user, pass, Security.TLS.Enabled, "")
 		if err != nil || cookie == nil {
 			LoginFailed(w, r)
 			return
 		}
-		fmt.Println("Login success...")
-		http.Redirect(w, r, "/", 301)
+                http.SetCookie(w, cookie)
+                return cookie
 	}
+        return nil
 }
 
 func Logout(r *http.Request) {
@@ -125,5 +127,5 @@ func Logout(r *http.Request) {
 }
 
 func LoginFailed(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("[!] login failed")
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
