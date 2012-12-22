@@ -138,9 +138,7 @@ func WikiServe(w http.ResponseWriter, r *http.Request) {
 	mode := r.FormValue("mode")
 	if r.Method == "POST" {
 		WikiPost(w, r)
-	}
-
-	if Security.Enabled && Security.AuthView && authenticated(r) {
+        } else if Security.Enabled && Security.AuthView && authenticated(r) {
 		if mode != "" {
 			switch mode {
 			case "edit":

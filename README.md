@@ -8,11 +8,8 @@ What's missing?
 * proper page linking and highlighting links that don't exist. I'm reading
 [blackfriday](https://github.com/russross/blackfriday) to create a
 wiki-markdown library, but this is going to take some work (and time).
-* the ability to delete pages
-* a listing of all the pages in the wiki
 * installer support. this will allow the wiki to create a set of default
 templates and directory layout if one is missing.
-* search.
 
 So what can you actually do? Edit and create new pages. This program
 is designed for a single user, so you can specify a wiki user and
