@@ -13,17 +13,17 @@
     </form>
 {{if .AuthRequired}}
 {{if .Authenticated}}
-   <form class="navbar-form pull-right">
+   <form class="navbar-form pull-right" action="/" method="POST">
+   <input type="hidden" name="mode" value="logout">
    <button type="submit" class="btn">Logout</button>
    </form>
 {{else}}
-    <form class="navbar-form pull-right" method="POST" action="/login">
+    <form class="navbar-form pull-right" method="POST" action="/">
+      <input type="hidden" name="mode" value="login">
       <input class="span2" type="text" placeholder="Username" name="user">
       <input class="span2" type="password" placeholder="Password" name="pass">
     <button type="submit" class="btn">Log in</button>
-    </form>
-{{end}}
-{{end}}
+    </form> {{end}} {{end}}
 </div>
 </div>
 </div>
