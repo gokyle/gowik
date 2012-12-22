@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 var titleRegex *regexp.Regexp
@@ -102,15 +103,8 @@ type Page struct {
 	ShowMessage   bool
 }
 
-func ServeWikiPage(w http.ResponseWriter, r *http.Request) {
-	edit := false
-	update := false
-	if r.URL.Path == "/logout" {
-		Logout(r)
-	} else if r.URL.Path == "/login" {
-		Login(w, r)
-	}
-	page := new(Page)
+func LoadPage(r *http.Request) (page *Page) {
+	page = new(Page)
 	page.AuthRequired = Security.Enabled
 	page.Authenticated = authenticated(r)
 	page.RequestToFile(r.URL.Path)
@@ -118,22 +112,30 @@ func ServeWikiPage(w http.ResponseWriter, r *http.Request) {
 	if page.Error != nil && os.IsNotExist(page.Error) {
 		page.Body = template.HTML(fmt.Sprintf(NoPage, page.Title))
 	}
-	if r.Method != "GET" && r.Method != "HEAD" {
-		if r.FormValue("new_body") != "" {
-			UpdatePage(page, r.FormValue("new_body"))
-		}
-	}
+	return
+}
 
-	if update {
-		fmt.Println("[-] update?")
+func LoadPageFile(path string, r *http.Request) (page *Page) {
+	page = new(Page)
+	page.AuthRequired = Security.Enabled
+	page.Authenticated = authenticated(r)
+	page.RequestToFile(path)
+	page.RenderMarkdown()
+	if page.Error != nil && os.IsNotExist(page.Error) {
+		page.Body = template.HTML(fmt.Sprintf(NoPage, page.Title))
+	}
+        return page
+}
+
+// ROUTE ALL SIGNAL
+func WikiServe(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		WikiPost(w, r)
 	} else if r.FormValue("mode") == "edit" {
-		edit = true
+		WikiEdit(w, r)
+	} else {
+		WikiView(w, r)
 	}
-
-	if len(page.Body) == 0 {
-		fmt.Println("[!] invalid file")
-	}
-	ShowPage(edit, page, w, r)
 }
 
 // RequestToFile translates an incoming request to a markdown filename.
@@ -156,24 +158,11 @@ func (page *Page) RenderMarkdown() {
 		page.Error = err
 		return
 	}
-	page.Content = string(mdContent)
+	page.Content = strings.TrimSpace(string(mdContent))
 	page.Body = template.HTML(string(blackfriday.MarkdownCommon(mdContent)))
 }
 
-func ShowPage(edit bool, page *Page, w http.ResponseWriter, r *http.Request) {
-	var t *template.Template
-	var err error
-	if edit {
-		t = template.New("edit")
-		t, err = t.Parse(Wiki.EditTemplate)
-	} else {
-		t = template.New("page")
-		t, err = t.Parse(Wiki.PageTemplate)
-	}
-	if err != nil {
-		fmt.Printf("[!] template error: %s\n", err.Error())
-		return
-	}
+func ServePage(t *template.Template, page *Page, w http.ResponseWriter) {
 	out, err := webshell.BuildTemplate(t, page)
 	if err != nil {
 		panic("template error: " + err.Error())
@@ -181,8 +170,8 @@ func ShowPage(edit bool, page *Page, w http.ResponseWriter, r *http.Request) {
 	w.Write(out)
 }
 
-func UpdatePage(page *Page, newBody string) {
-	_, err := os.Stat(filepath.Dir(page.Filename))
+func UpdatePage(page *Page, newBody string) (err error) {
+	_, err = os.Stat(filepath.Dir(page.Filename))
 	if err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(filepath.Dir(page.Filename), 0755)
 	}
@@ -190,6 +179,87 @@ func UpdatePage(page *Page, newBody string) {
 	if err != nil {
 		page.Error = err
 		page.ShowError = true
+		return
 	}
 	err = ioutil.WriteFile(page.Filename, []byte(newBody), 0666)
+	if err != nil {
+		return
+	}
+	return nil
+}
+
+func WikiPost(w http.ResponseWriter, r *http.Request) {
+        mode := r.FormValue("mode")
+        switch mode {
+        case "login":
+                cookie := Login(w, r)
+                if cookie != nil {
+                        http.SetCookie(w, cookie)
+                        RedirectToIndex(w, r)
+                }
+                WikiPage("/", w, r)
+        case "logout":
+                Logout(r)
+                WikiPage("/", w, r)
+        default:
+                if r.FormValue("new_body") == "" || !authorised(true, r) {
+                        RedirectToIndex(w, r)
+                        return
+                }
+                page := LoadPage(r)
+                err := UpdatePage(page, r.FormValue("new_body"))
+                t := Template(Wiki.PageTemplate, w, r)
+                if err != nil {
+                        page.Error = err
+                        page.ShowError = true
+                } else {
+                        page = LoadPage(r)
+                }
+                ServePage(t, page, w)
+        }
+}
+
+func WikiEdit(w http.ResponseWriter, r *http.Request) {
+        var t *template.Template
+	page := LoadPage(r)
+        if Security.Enabled && !page.Authenticated {
+	        t = Template(Wiki.PageTemplate, w, r)
+                page.Body = template.HTML(NotAuthorised)
+                page.Content = NotAuthorised
+        } else {
+                t = Template(Wiki.EditTemplate, w, r)
+        }
+
+	if t == nil {
+                RedirectToIndex(w, r)
+	}
+	ServePage(t, page, w)
+}
+
+func WikiView(w http.ResponseWriter, r *http.Request) {
+        WikiPage(r.URL.Path, w, r)
+}
+
+func WikiPage(path string, w http.ResponseWriter, r *http.Request) {
+	page := LoadPageFile(path, r)
+        t := Template(Wiki.PageTemplate, w, r)
+        if t == nil {
+                return
+        }
+	ServePage(t, page, w)
+}
+
+func RedirectToIndex(w http.ResponseWriter, r *http.Request) {
+                        req, _ := http.NewRequest("GET", "/", nil)
+                        http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
+}
+
+func Template(tplSource string, w http.ResponseWriter, r *http.Request) (*template.Template) {
+	t := template.New("page")
+	t, err := t.Parse(tplSource)
+	if err != nil {
+		webshell.Error500(err.Error(), "text/plain", w, r)
+		return nil
+	}
+        return t
 }
