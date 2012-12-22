@@ -1,11 +1,25 @@
-# Q. what the hell is this?
-## A. the bastard creation of a late night zombie mode
+## gowik
 
-# Q. how do i use it?
-## A. you don't
+This is a partially-functional pseudo-wiki backed by markdown. It is
+designed as a replacement for [gitit](http://www.gitit.net).
 
-# Q. how i edit wiki pages?
-## A. url?edit
+What's missing?
 
-# Q. y u no auth?
-## patience, young padawan
+* proper page linking and highlighting links that don't exist. I'm reading
+[blackfriday](https://github.com/russross/blackfriday) to create a
+wiki-markdown library, but this is going to take some work (and time).
+* the ability to delete pages
+* a listing of all the pages in the wiki
+* installer support. this will allow the wiki to create a set of default
+templates and directory layout if one is missing.
+* search.
+
+So what can you actually do? Edit and create new pages. This program
+is designed for a single user, so you can specify a wiki user and
+password for authentication. 
+
+You can link to pages in the wiki with
+```
+        [page title](/page)
+```
+
