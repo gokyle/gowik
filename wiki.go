@@ -117,14 +117,14 @@ func LoadPage(r *http.Request) (page *Page) {
 }
 
 func LoadPageFile(path string, r *http.Request) (page *Page) {
-        if r == nil && Security.AuthView {
-                return
-        }
+	if r == nil && Security.AuthView {
+		return
+	}
 	page = new(Page)
-        if r != nil {
-	        page.AuthRequired = Security.Enabled
-	        page.Authenticated = authenticated(r)
-        }
+	if r != nil {
+		page.AuthRequired = Security.Enabled
+		page.Authenticated = authenticated(r)
+	}
 	page.RequestToFile(path)
 	page.RenderMarkdown()
 	if page.Error != nil && os.IsNotExist(page.Error) {
@@ -138,20 +138,27 @@ func WikiServe(w http.ResponseWriter, r *http.Request) {
 	mode := r.FormValue("mode")
 	if r.Method == "POST" {
 		WikiPost(w, r)
-	} else if mode != "" {
-		switch mode {
-		case "edit":
-			WikiEdit(w, r)
-		case "delete":
-			WikiDelete(w, r)
-		case "list":
-			WikiList(w, r)
-                case "search":
-                        WikiSearch(w, r)
-                        //RedirectToIndex(w, r)
+	}
+
+	if Security.Enabled && Security.AuthView && authenticated(r) {
+		if mode != "" {
+			switch mode {
+			case "edit":
+				WikiEdit(w, r)
+			case "delete":
+				WikiDelete(w, r)
+			case "list":
+				WikiList(w, r)
+			case "search":
+				WikiSearch(w, r)
+			}
+		} else {
+			WikiView(w, r)
 		}
 	} else {
-		WikiView(w, r)
+		page := LoadPage(r)
+		t := WikiNotAuthorised(page, w, r)
+		ServePage(t, page, w)
 	}
 }
 
@@ -308,7 +315,7 @@ func WikiNotAuthorised(page *Page, w http.ResponseWriter, r *http.Request) *temp
 }
 
 func WikiList(w http.ResponseWriter, r *http.Request) {
-        pages := PageList()
+	pages := PageList()
 	var body string
 	for _, pageString := range pages {
 		body += "    <li><a href=\"" + pageString + "\">" + pageString[1:] + "</a></li>\n"
@@ -337,16 +344,16 @@ func PageList() []string {
 		return err
 	})
 	sort.Strings(pages)
-        return pages
+	return pages
 }
 
 func WikiSearch(w http.ResponseWriter, r *http.Request) {
-        results := SearchPages(r.FormValue("terms"))
-        var body string
-        for _, res := range results {
+	results := SearchPages(r.FormValue("terms"))
+	var body string
+	for _, res := range results {
 		body += "    <li><a href=\"/%s\">%s</a> (%d matches)</li>"
-                body = fmt.Sprintf(body, res.Page, res.Page, res.Hits)
-        }
+		body = fmt.Sprintf(body, res.Page, res.Page, res.Hits)
+	}
 	body = fmt.Sprintf(`<h1>Search Results</h1>
   <p>There were <strong>%d</strong> matches:</p>
   <ul>
