@@ -1,7 +1,7 @@
 # DON'T PANIC
 
-## gowiki is my idea for a go-based wiki
-
+## gowik is my idea for a go-based wiki
+Current [TODO](/gowik)
 ### Time fer a test mang!
 
 Some stuff *should* happen, but **probably** not here.
