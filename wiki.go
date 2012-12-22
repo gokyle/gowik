@@ -117,9 +117,6 @@ func LoadPage(r *http.Request) (page *Page) {
 }
 
 func LoadPageFile(path string, r *http.Request) (page *Page) {
-	if r == nil && Security.AuthView {
-		return
-	}
 	page = new(Page)
 	if r != nil {
 		page.AuthRequired = Security.Enabled
