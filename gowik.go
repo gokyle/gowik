@@ -52,7 +52,7 @@ func initServer(serverCfg map[string]string) {
 
 func main() {
 	assetsDir := filepath.Join(Wiki.WikiDir, "assets")
-	app.AddRoute("/", ServeWikiPage)
+	app.AddRoute("/", WikiServe)
 	app.StaticRoute("/assets/", assetsDir)
 	fmt.Println("[+] wiki serving on ", app.Address())
 	log.Fatal(app.Serve())
