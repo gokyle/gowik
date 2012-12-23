@@ -34,15 +34,15 @@ func initDefaultPaths() {
 	}
 
 	var err error
-	if missing := checkPaths(Wiki.WikiDir); len(missing) > 0 {
-		err = copyMissing(missing, paths)
+	if missing := CheckPaths(Wiki.WikiDir); len(missing) > 0 {
+		err = CopyMissing(missing, paths)
 	}
 	if err != nil {
 		panic("missing files: " + err.Error())
 	}
 }
 
-func checkPaths(base string) []string {
+func CheckPaths(base string) []string {
 	missing := make([]string, 0)
 	for _, f := range ReqFiles {
 		fPath := filepath.Join(base, f)
@@ -90,10 +90,10 @@ func CopyFile(source, dest string) (err error) {
 	return
 }
 
-func copyMissing(missing, paths []string) (err error) {
+func CopyMissing(missing, paths []string) (err error) {
 	var srcPath string
 	for _, p := range paths {
-		if srcMissing := checkPaths(p); len(srcMissing) == 0 {
+		if srcMissing := CheckPaths(p); len(srcMissing) == 0 {
 			srcPath = p
 			break
 		}
