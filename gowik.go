@@ -25,6 +25,7 @@ func init() {
 	}
 	initSecurity(cfg["security"])
 	initWiki(cfg["wiki"])
+        initDefaultPaths()
 	initServer(cfg["server"])
 }
 

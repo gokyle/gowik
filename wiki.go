@@ -58,6 +58,7 @@ func initWiki(wikiCfg map[string]string) {
 		}
 	}
 
+        initDefaultPaths()
 	for _, tFile := range pageTemplates {
 		pageFile := filepath.Join(Wiki.WikiDir, "templates", tFile)
 		page, err := ioutil.ReadFile(pageFile)
