@@ -1,0 +1,5 @@
+#!/bin/sh
+
+source /etc/wiki.conf
+su -c "$GOWIK -f ${CONF}" ${USER}
+
