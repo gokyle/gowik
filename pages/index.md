@@ -27,6 +27,9 @@ $ cd ~/wiki
 $ gowik
 ```
 
+### Configuration
+`gowik` is controlled by a simple configuration file, which is documented in [docs/config](/docs/config).
+
 Source control isn't handled by `gowik` (*yet*), but I use git to backup
 and sync my wiki.
 

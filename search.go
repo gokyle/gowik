@@ -39,6 +39,10 @@ func SearchFile(path string, terms []SearchTerm) (sr *SearchResult) {
 	for _, term := range terms {
 		matches := term.Regex.FindAllString(body, -1)
 		sr.Hits += len(matches)
+		matches = term.Regex.FindAllString(page.Title, 1)
+		if len(matches) > 0 {
+			sr.Hits++
+		}
 	}
 
 	if sr.Hits > 0 {

@@ -1,7 +1,8 @@
 ## gowik
 
 This is a partially-functional pseudo-wiki backed by markdown. It is
-designed as a replacement for [gitit](http://www.gitit.net).
+designed as a replacement for [gitit](http://www.gitit.net). It works
+just well enough for me to use it as my note repository.
 
 ### What's missing?
 
@@ -46,3 +47,12 @@ and viewing existing pages. From the original index page:
 > * why not?
 > * couldn't sleep
 > * are you not making a wiki?
+
+
+## Bugs / TODO
+
+* Search should search page titles as well as page text.
+* There's a problem in the authentication section; bad credentials lead to
+an infinite redirect. I believe this is actually a fault in the
+[webshell/auth](https://github.com/gokyle/webshell) code, but it manifests
+here, as well.
