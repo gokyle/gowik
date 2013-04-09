@@ -69,13 +69,13 @@ func FileExists(path string) bool {
 }
 
 func CopyFile(source, dest string) (err error) {
-        fmt.Printf("[+] copying %s -> %s\n", source, dest)
-        if !FileExists(filepath.Dir(dest)) {
-                err = os.MkdirAll(filepath.Dir(dest), 0755)
-                if err != nil {
-                        return
-                }
-        }
+	fmt.Printf("[+] copying %s -> %s\n", source, dest)
+	if !FileExists(filepath.Dir(dest)) {
+		err = os.MkdirAll(filepath.Dir(dest), 0755)
+		if err != nil {
+			return
+		}
+	}
 	sFile, err := os.Open(source)
 	if err != nil {
 		return

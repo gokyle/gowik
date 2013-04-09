@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 // ROUTE ALL SIGNAL
@@ -155,17 +156,33 @@ func WikiList(w http.ResponseWriter, r *http.Request) {
 
 // WikiSearch searches the wiki for the given keywords.
 func WikiSearch(w http.ResponseWriter, r *http.Request) {
-	results := SearchPages(r.FormValue("terms"))
-	var body string
+        terms := r.FormValue("terms")
+	results, termCount := SearchPages(terms)
+	var (
+		body      string
+		pageFound bool
+                pageName  string
+	)
+
+	if termCount == 1 {
+		for _, res := range results {
+				m, err := regexp.MatchString(terms+"$", res.Page)
+                                if err == nil && m {
+					pageFound = true
+				}
+		}
+                if !pageFound {
+                        pageName = terms
+                }
+	} else {
+		pageFound = true
+	}
+
 	for _, res := range results {
 		body += "    <li><a href=\"/%s\">%s</a> (%d matches)</li>"
 		body = fmt.Sprintf(body, res.Page, res.Page, res.Hits)
 	}
-	body = fmt.Sprintf(`<h1>Search Results</h1>
-  <p>There were <strong>%d</strong> matches:</p>
-  <ul>
-%s
-</ul>`, len(results), body)
+        body = SearchResultTemplate(body, len(results), pageFound, pageName)
 	page := LoadPageFile("/", r)
 	page.Body = template.HTML(body)
 	page.Special = true

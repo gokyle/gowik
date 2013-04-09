@@ -5,6 +5,7 @@ package main
 */
 
 import (
+        "fmt"
 	"regexp"
 	"strings"
 )
@@ -72,15 +73,32 @@ func GetSearchTerms(searchString string) []SearchTerm {
 	return terms
 }
 
-func SearchPages(termString string) []SearchResult {
+func SearchPages(termString string) (results []SearchResult, termCount int) {
 	pages := PageList()
-	results := make([]SearchResult, 0)
+	results = make([]SearchResult, 0)
 	terms := GetSearchTerms(termString)
+        termCount = len(terms)
 	for _, p := range pages {
 		sr := SearchFile(p, terms)
 		if sr != nil {
 			results = append(results, *sr)
 		}
 	}
-	return results
+	return
+}
+
+func SearchResultTemplate(body string, n int, pageFound bool, pageName string) string {
+        baseTemplate := `<h1>Search Results</h1>
+  <p>There were <strong>%d</strong> matches:</p>
+  <ul>
+%s
+</ul>`
+        if !pageFound {
+                baseTemplate = fmt.Sprintf(`<p><em>%s not found. <a href="/%s?mode=edit">Create it?</a></em></p>
+
+%s`,
+                        pageName, pageName, baseTemplate)
+        }
+
+        return fmt.Sprintf(baseTemplate, n, body)
 }
